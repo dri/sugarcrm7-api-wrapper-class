@@ -688,4 +688,31 @@ class Rest
         return $result;
     }
 
+    /**
+     * Request a new password.
+     *
+     * @param $username
+     * @param $email
+     * @param $options
+     * @return array|bool|float|int|string
+     */
+    public function requestPassword($username, $email, $options = array())
+    {
+        $data = array(
+          'query' => array(
+            'username' => $username,
+            'email'    => $email,
+          )
+        );
+
+        $parameters = array_merge_recursive($data, $options);
+
+        $request = $this->client->get('password/request', null, $parameters);
+        $result = $request->send()->json();
+
+        if (!$result)
+            return false;
+
+        return $result;
+    }
 }
