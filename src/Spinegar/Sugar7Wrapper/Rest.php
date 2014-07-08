@@ -64,10 +64,22 @@ class Rest
     function __construct()
     {
         $this->client = new Client();
+
+        $this->client->getEventDispatcher()->addListener(
+          'request.before_send',
+          function (Event $event) {
+              $token = self::getToken();
+              if (!empty($token)) {
+                  $event['request']->setHeader('OAuth-Token', $token);
+              }
+          }
+        );
     }
 
     public function connect($refreshToken = false)
     {
+        $this->token = null;
+
         if (!$refreshToken) {
             $parameters = array(
               'grant_type'    => 'password',
@@ -83,6 +95,7 @@ class Rest
               'client_id'     => 'sugar',
               'client_secret' => '',
               'refresh_token' => $this->refresh_token,
+              'platform'      => $this->platform,
             );
         }
 
@@ -124,6 +137,7 @@ class Rest
 
         try {
             $request = $this->client->get('ping');
+            $response = $request->send()->json();
             $connectionAlive = true;
         } catch (ClientErrorResponseException $e) {
             if ($e->getResponse()->getStatusCode() == 401) {
@@ -143,8 +157,9 @@ class Rest
      */
     public function check()
     {
-        if (!$this->token)
+        if (!$this->token) {
             return false;
+        }
 
         return true;
     }
@@ -170,8 +185,9 @@ class Rest
      */
     public function setPlatform($value)
     {
-        if (!$value)
+        if (!$value) {
             return false;
+        }
 
         $this->platform = $value;
 
@@ -234,17 +250,11 @@ class Rest
      */
     public function setToken($value)
     {
-        if (!$value)
+        if (!$value) {
             return false;
+        }
 
         $this->token = $value;
-
-        $this->client->getEventDispatcher()->addListener(
-          'request.before_send',
-          function (Event $event) use ($value) {
-              $event['request']->setHeader('OAuth-Token', $value);
-          }
-        );
 
         return true;
     }
@@ -268,8 +278,9 @@ class Rest
      */
     public function setRefreshToken($value)
     {
-        if (!$value)
+        if (!$value) {
             return false;
+        }
 
         $this->refresh_token = $value;
 
@@ -290,8 +301,9 @@ class Rest
         $request = $this->client->post($module, null, $fields);
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -325,8 +337,9 @@ class Rest
 
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -345,8 +358,9 @@ class Rest
         $request = $this->client->delete($module . '/' . $record);
         $result = $request->send();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return true;
     }
@@ -366,8 +380,9 @@ class Rest
 
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -387,8 +402,9 @@ class Rest
         $request = $this->client->put($module . '/' . $record, null, json_encode($fields));
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -407,8 +423,9 @@ class Rest
         $request = $this->client->put($module . '/' . $record . '/favorite');
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -427,8 +444,9 @@ class Rest
         $request = $this->client->delete($module . '/' . $record . '/favorite');
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -447,8 +465,9 @@ class Rest
         $request = $this->client->get($module . '/' . $record . '/file');
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -469,8 +488,9 @@ class Rest
         $request->setResponseBody($destination);
         $result = $request->send();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -502,8 +522,9 @@ class Rest
         $request->addPostFile($field, $path, $contentType, $filename);
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -523,8 +544,9 @@ class Rest
         $request = $this->client->delete($module . '/' . $record . '/file/' . $field);
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -544,8 +566,9 @@ class Rest
         $request = $this->client->get($module . '/' . $record . '/link/' . $link);
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -571,8 +594,9 @@ class Rest
         );
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -591,8 +615,9 @@ class Rest
         $request = $this->client->delete($module . '/' . $record . '/link/' . $link . '/' . $related_record);
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -618,8 +643,9 @@ class Rest
         );
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -631,8 +657,9 @@ class Rest
         $request = $this->client->get('metadata');
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -652,8 +679,9 @@ class Rest
         $request = $this->client->get('lang/' . $l);
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -682,8 +710,9 @@ class Rest
 
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
@@ -710,8 +739,9 @@ class Rest
         $request = $this->client->get('password/request', null, $parameters);
         $result = $request->send()->json();
 
-        if (!$result)
+        if (!$result) {
             return false;
+        }
 
         return $result;
     }
